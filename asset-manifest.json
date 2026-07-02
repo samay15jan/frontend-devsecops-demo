@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/frontend-devsecops-demo/static/css/main.e01a6023.css",
+    "main.js": "/frontend-devsecops-demo/static/js/main.aded80bf.js",
+    "index.html": "/frontend-devsecops-demo/index.html",
+    "main.e01a6023.css.map": "/frontend-devsecops-demo/static/css/main.e01a6023.css.map",
+    "main.aded80bf.js.map": "/frontend-devsecops-demo/static/js/main.aded80bf.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e01a6023.css",
+    "static/js/main.aded80bf.js"
+  ]
+}
