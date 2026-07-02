@@ -1,0 +1,25 @@
+# Snyk (https://snyk.io) policy file
+# =============================================================================
+# This file lets you customize how Snyk handles specific vulnerabilities:
+# ignore them (with an expiry and reason, for audit purposes) or patch them.
+#
+# In this academic demo, the outdated `lodash@4.17.11` entry in
+# package.json is left INTENTIONALLY vulnerable so that `snyk test` /
+# `snyk monitor` in the CI pipeline has something real to detect and
+# report on. We do NOT ignore it here, specifically so it shows up in
+# scan results, the SonarQube dashboard, and the GitHub Actions job
+# summary as intended teaching material.
+#
+# The commented-out block below shows the syntax you WOULD use in a real
+# project to temporarily accept a risk (e.g. while waiting on an upstream
+# patch), for reference.
+# =============================================================================
+version: v1.5.0
+ignore: {}
+#  SNYK-JS-LODASH-590103:
+#    - '*':
+#        reason: >
+#          Example only - temporarily accepted while awaiting a compatible
+#          upstream release. Must be reviewed before this expiry date.
+#        expires: 2026-12-31T00:00:00.000Z
+patch: {}

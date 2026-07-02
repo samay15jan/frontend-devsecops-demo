@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!--
+      Security note (Content-Security-Policy):
+      In a production deployment this CSP would normally be set as an HTTP
+      response header by the server/CDN rather than a <meta> tag, because
+      header-based CSP also covers non-HTML responses and cannot be
+      stripped by a compromised page. It is included here as a <meta> tag
+      purely so the policy is visible for demo/review purposes.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; frame-ancestors 'none';"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0d1b2a" />
+    <meta
+      name="description"
+      content="DevSecOps for Frontend Development - academic demo of secure React CI/CD pipeline"
+    />
+    <title>DevSecOps Frontend Demo</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>

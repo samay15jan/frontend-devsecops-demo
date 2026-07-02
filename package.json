@@ -1,0 +1,52 @@
+{
+  "name": "frontend-devsecops-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Academic demonstration project: integrating security into a frontend UI/UX design and CI/CD pipeline using React, ESLint, SonarQube, and Snyk.",
+  "author": "Engineering Internship Project",
+  "license": "MIT",
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "react-router-dom": "^6.23.1",
+    "dompurify": "^3.1.5"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.34.1",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-security": "^2.1.0",
+    "eslint-plugin-no-unsanitized": "4.0.1",
+    "eslint-config-react-app": "^7.0.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --watchAll=false",
+    "eject": "react-scripts eject",
+    "lint": "eslint src --ext .js,.jsx",
+    "lint:fix": "eslint src --ext .js,.jsx --fix"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "//_comment_outdated_dependency_example": "The 'lodash' pin below is an INTENTIONALLY outdated version (contains known, publicly-documented prototype-pollution advisories, e.g. CVE-2019-10744 / CVE-2020-8203) added ONLY to demonstrate Snyk's dependency-scanning capability in this academic pipeline. It is not imported anywhere in the app. In a real project you would keep dependencies on the latest patched release. See README 'Insecure Dependencies' section.",
+  "optionalDependencies": {
+    "lodash": "4.17.11"
+  }
+}

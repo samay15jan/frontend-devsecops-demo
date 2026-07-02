@@ -1,0 +1,138 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: #0d1b2a;
+  color: #e0e1dd;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem;
+}
+
+.card {
+  background-color: #1b263b;
+  border: 1px solid #415a77;
+  border-radius: 10px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.card h1,
+.card h2 {
+  margin-top: 0;
+  color: #e0e1dd;
+}
+
+.field {
+  margin-bottom: 1rem;
+}
+
+.field label {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 0.35rem;
+  color: #a9bcd0;
+}
+
+.field input {
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid #415a77;
+  background-color: #0d1b2a;
+  color: #e0e1dd;
+  font-size: 0.95rem;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 0.7rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #4ea8de;
+  color: #0d1b2a;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.btn-primary:hover {
+  background-color: #61c0f8;
+}
+
+.error-text {
+  color: #ff6b6b;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.badge-insecure {
+  display: inline-block;
+  background-color: #e63946;
+  color: white;
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+.badge-secure {
+  display: inline-block;
+  background-color: #2a9d8f;
+  color: white;
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+.section-divider {
+  border: none;
+  border-top: 1px dashed #415a77;
+  margin: 1.5rem 0;
+}
+
+.code-note {
+  font-family: "Courier New", monospace;
+  font-size: 0.8rem;
+  background-color: #0d1b2a;
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #415a77;
+  white-space: pre-wrap;
+  color: #a9bcd0;
+}
+
+nav.navbar {
+  width: 100%;
+  max-width: 700px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #415a77;
+}
+
+nav.navbar a {
+  color: #4ea8de;
+  text-decoration: none;
+  margin-left: 1rem;
+  font-weight: 500;
+}
+
+nav.navbar a:hover {
+  text-decoration: underline;
+}

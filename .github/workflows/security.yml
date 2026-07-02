@@ -1,0 +1,130 @@
+# =============================================================================
+# DevSecOps CI Pipeline
+# -----------------------------------------------------------------------------
+# Runs on every push and pull request against `main`. Demonstrates how
+# security scanning (SAST via ESLint + SonarQube, and dependency/SCA
+# scanning via Snyk) is woven into a standard frontend build pipeline,
+# alongside the normal install/lint/build/test steps.
+#
+# Required GitHub Secrets (Repo Settings -> Secrets and variables -> Actions):
+#   SNYK_TOKEN       - Snyk API token (see README "Snyk" section)
+#   SONAR_TOKEN      - SonarQube/SonarCloud authentication token
+#   SONAR_HOST_URL   - URL of your SonarQube server (omit for SonarCloud)
+# =============================================================================
+
+name: Frontend Security Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  # Allows manually triggering the workflow from the Actions tab.
+  workflow_dispatch:
+
+# Restrict the automatic GITHUB_TOKEN to the minimum permissions needed.
+permissions:
+  contents: read
+
+jobs:
+  build-and-scan:
+    name: Install, Lint, Build & Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      # -----------------------------------------------------------------
+      # 1. Checkout source code
+      # -----------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Full history improves SonarQube's ability to compute
+          # new-code metrics and blame information.
+          fetch-depth: 0
+
+      # -----------------------------------------------------------------
+      # 2. Set up Node.js toolchain
+      # -----------------------------------------------------------------
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      # -----------------------------------------------------------------
+      # 3. Install dependencies
+      # -----------------------------------------------------------------
+      - name: Install dependencies
+        run: npm install
+
+      # -----------------------------------------------------------------
+      # 4. Static Application Security Testing (SAST) - ESLint
+      # -----------------------------------------------------------------
+      - name: Run ESLint (security + code quality rules)
+        run: |
+          npx eslint src --ext .js,.jsx \
+            --format json --output-file eslint-report.json || true
+          npx eslint src --ext .js,.jsx
+
+      # -----------------------------------------------------------------
+      # 5. Build the React application
+      # -----------------------------------------------------------------
+      - name: Build React app
+        run: npm run build
+
+      # -----------------------------------------------------------------
+      # 6. Run unit tests with coverage (feeds SonarQube's coverage report)
+      # -----------------------------------------------------------------
+      - name: Run tests with coverage
+        run: npm test -- --coverage
+        continue-on-error: true
+
+      # -----------------------------------------------------------------
+      # 7. Software Composition Analysis (SCA) - Snyk
+      #    Scans package.json/package-lock.json for known vulnerable
+      #    dependencies (this is what will flag the intentionally
+      #    outdated `lodash` example described in the README).
+      # -----------------------------------------------------------------
+      - name: Run Snyk to check for vulnerable dependencies
+        uses: snyk/actions/node@master
+        continue-on-error: true # don't fail the whole demo pipeline on the intentional finding
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+
+      # -----------------------------------------------------------------
+      # 8. Static Analysis + Quality Gate - SonarQube
+      # -----------------------------------------------------------------
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@v2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      # -----------------------------------------------------------------
+      # 9. Enforce the SonarQube Quality Gate (fails the build if the
+      #    project drops below the configured quality/security bar).
+      # -----------------------------------------------------------------
+      - name: SonarQube Quality Gate check
+        uses: sonarsource/sonarqube-quality-gate-action@master
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      # -----------------------------------------------------------------
+      # 10. Upload build + report artifacts for inspection
+      # -----------------------------------------------------------------
+      - name: Upload ESLint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint-report
+          path: eslint-report.json
+
+      - name: Upload production build
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-build
+          path: build/
