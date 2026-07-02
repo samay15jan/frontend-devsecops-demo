@@ -9,7 +9,6 @@ dist/
 
 # Coverage / test reports
 coverage/
-eslint-report.json
 
 # Environment variables (never commit secrets/tokens)
 .env
@@ -17,6 +16,9 @@ eslint-report.json
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Local `act` secrets file (see .secrets.example for the template)
+.secrets
 
 # Snyk
 .snyk.json

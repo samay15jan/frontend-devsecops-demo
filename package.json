@@ -5,6 +5,7 @@
   "description": "Academic demonstration project: integrating security into a frontend UI/UX design and CI/CD pipeline using React, ESLint, SonarQube, and Snyk.",
   "author": "Engineering Internship Project",
   "license": "MIT",
+  "homepage": "https://samay15jan.github.io/frontend-devsecops-demo",
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -18,7 +19,8 @@
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-security": "^2.1.0",
     "eslint-plugin-no-unsanitized": "4.0.1",
-    "eslint-config-react-app": "^7.0.1"
+    "eslint-config-react-app": "^7.0.1",
+    "gh-pages": "^6.1.1"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -26,7 +28,9 @@
     "test": "react-scripts test --watchAll=false",
     "eject": "react-scripts eject",
     "lint": "eslint src --ext .js,.jsx",
-    "lint:fix": "eslint src --ext .js,.jsx --fix"
+    "lint:fix": "eslint src --ext .js,.jsx --fix",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [

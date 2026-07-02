@@ -16,11 +16,12 @@
 2. [Architecture](#architecture)
 3. [Project Structure](#project-structure)
 4. [Installation](#installation)
-5. [CI/CD Pipeline](#cicd-pipeline)
-6. [Security Tools Comparison](#security-tools-comparison)
-7. [Screenshots](#screenshots)
-8. [Future Improvements](#future-improvements)
-9. [References](#references)
+5. [Running the Pipeline Locally (no paid SonarCloud/Snyk needed)](#running-the-pipeline-locally-no-paid-sonarcloudsnyk-needed)
+6. [CI/CD Pipeline](#cicd-pipeline)
+7. [Security Tools Comparison](#security-tools-comparison)
+8. [Screenshots](#screenshots)
+9. [Future Improvements](#future-improvements)
+10. [References](#references)
 
 ---
 
@@ -114,6 +115,8 @@ consistent and immediate rather than dependent on manual review.
 
 ## Architecture
 
+<img src="docs/workflow.png">
+
 ```
 Developer
     │
@@ -171,10 +174,13 @@ frontend-devsecops-demo/
 ├── .eslintrc.json                # ESLint config with security-focused plugins
 ├── sonar-project.properties     # SonarQube/SonarCloud project configuration
 ├── .snyk                        # Snyk policy file (ignore/patch rules)
+├── docker-compose.yml            # Local SonarQube Community Edition (free, via Docker)
+├── .secrets.example              # Template for local `act` secrets (SNYK_TOKEN, SONAR_TOKEN, etc.)
 ├── .gitignore                   # Standard Node/React ignore rules
 ├── .github/
 │   └── workflows/
-│       └── security.yml         # CI pipeline: install → lint → build → scan
+│       ├── security.yml         # CI pipeline: install → lint → build → scan
+│       └── deploy-pages.yml     # Builds and publishes to GitHub Pages (gh-pages branch)
 └── README.md                    # This file
 ```
 
@@ -220,7 +226,113 @@ npm run build      # Production build (output in build/)
 npm test           # Run unit tests
 npm run lint       # Run ESLint against src/
 npm run lint:fix   # Run ESLint and auto-fix what it can
+npm run deploy     # Build and publish build/ to the gh-pages branch
 ```
+
+### Deploying to GitHub Pages
+
+GitHub Pages serves static files as-is — it does not run `npm install` or
+`npm run build` for you. Pushing source code alone (as in this repo's
+`main` branch) is not enough; you must publish the **built** app.
+
+**Option A — one-off manual deploy:**
+
+```bash
+npm install
+npm run deploy
+```
+
+This builds the app and pushes the `build/` folder to a `gh-pages`
+branch (via the `gh-pages` npm package). Then, in your repo, go to
+**Settings → Pages → Build and deployment → Source: "Deploy from a
+branch"** and select the **`gh-pages`** branch, **`/ (root)`** folder.
+
+**Option B — automatic deploy on every push:**
+[`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml)
+builds and publishes to `gh-pages` automatically on every push to `main`.
+After its first successful run, point **Settings → Pages** at the
+`gh-pages` branch as in Option A, and future pushes will redeploy
+automatically — no manual `npm run deploy` needed.
+
+> **Why HashRouter?** This app uses React Router's `HashRouter` (URLs
+> look like `.../#/dashboard`) rather than `BrowserRouter`. GitHub Pages
+> has no server to rewrite deep-link requests (e.g. a direct visit to
+> `/dashboard`) back to `index.html`, so `BrowserRouter` would 404 on
+> refresh. `HashRouter` keeps all routing client-side after the single
+> `index.html` loads, avoiding that problem entirely.
+
+---
+
+## Running the Pipeline Locally (no paid SonarCloud/Snyk needed)
+
+This project was built and graded as a **local demonstration**, not a
+hosted service — there's no requirement to keep a live GitHub Pages demo
+or a paid SonarCloud/Snyk plan running. Instead, the full pipeline
+(ESLint → build → Snyk → SonarQube) can be run entirely on a local
+machine using free tooling, and the results captured as screenshots for
+submission.
+
+### 1. Spin up a local SonarQube server (Community Edition, via Docker)
+
+SonarQube's free **Community Edition** runs fine in Docker and doesn't
+require any paid plan:
+
+```bash
+docker compose up -d
+```
+
+This uses [`docker-compose.yml`](docker-compose.yml) to start SonarQube
+CE on **http://localhost:9000**. First login is `admin` / `admin`
+(you'll be forced to set a new password immediately). Once logged in,
+generate a token under **My Account → Security → Generate Tokens** —
+you'll need it below.
+
+To stop it: `docker compose down`. To fully wipe local data/projects:
+`docker compose down -v`.
+
+### 2. Get a free Snyk token
+
+See the [Snyk](#snyk) section below — the free personal token (not the
+paid Enterprise API/service-accounts feature) is all that's needed for
+CLI/CI scanning.
+
+### 3. Run the workflow locally with `act`
+
+[`act`](https://github.com/nektos/act) runs GitHub Actions workflows
+locally in Docker, so you can execute `.github/workflows/security.yml`
+without pushing to GitHub or paying for hosted runners/tools.
+
+```bash
+# Install act (macOS example - see act's docs for Windows/Linux):
+brew install act
+
+# Copy the secrets template and fill in real values:
+cp .secrets.example .secrets
+
+# Run the security pipeline job:
+act -j build-and-scan --secret-file .secrets
+```
+
+`.secrets.example` documents each value, including the important detail
+that `SONAR_HOST_URL` must point at `host.docker.internal:9000` (not
+`localhost:9000`) so the containerized `act` runner can reach the
+SonarQube container running on your host machine.
+
+### Known local/offline quirks
+
+- The **SonarQube Quality Gate check** step polls a webhook that a fresh
+  local SonarQube CE instance isn't configured to send. It's marked
+  `continue-on-error: true` in the workflow specifically so local runs
+  complete and still produce a report, rather than hanging or failing
+  the whole job while waiting on a webhook that will never arrive.
+- `act` doesn't perfectly emulate every GitHub-hosted feature (e.g. some
+  artifact-upload/summary UI won't render the same as on github.com) —
+  this is expected and doesn't affect whether ESLint/Snyk/SonarQube
+  actually ran and produced findings.
+- For submission, take screenshots of: the `act` terminal output showing
+  each step completing, the ESLint findings, the Snyk vulnerability
+  report, and the local SonarQube dashboard at `localhost:9000` — see
+  [Screenshots](#screenshots) below.
 
 ---
 
@@ -326,9 +438,9 @@ temporarily ignore an accepted-risk finding.
 ### How to obtain a Snyk token
 
 1. Create a free account at [snyk.io](https://snyk.io).
-2. Go to **Account Settings → General → Auth Token** (or run `snyk auth`
+2. Go to **Account Settings → General → Oersonal Access Token** (or run `snyk auth`
    locally with the Snyk CLI to authenticate interactively).
-3. Copy the generated API token.
+3. Copy the generated API.
 4. Add it to your GitHub repository as a secret named `SNYK_TOKEN`
    (**Repo Settings → Secrets and variables → Actions → New repository
    secret**).
@@ -355,14 +467,94 @@ introduced by *code you didn't write* (your dependencies).
 
 ## Screenshots
 
-> _Add screenshots here once the app and pipeline have been run at least
-> once, e.g.:_
+This project is demonstrated via local pipeline runs (see
+[Running the Pipeline Locally](#running-the-pipeline-locally-no-paid-sonarcloudsnyk-needed))
+rather than a permanently hosted live deployment. Add screenshots here
+after running `npm start` and `act -j build-and-scan` at least once:
 
-- `docs/screenshots/login-page.png` — Login page UI
-- `docs/screenshots/dashboard-page.png` — Dashboard page UI
-- `docs/screenshots/github-actions-run.png` — Successful CI pipeline run
-- `docs/screenshots/sonarqube-dashboard.png` — SonarQube project dashboard
-- `docs/screenshots/snyk-report.png` — Snyk vulnerability report
+### Application Interface
+
+#### Login & Dashboard
+
+The application demonstrates a secure frontend login flow, password validation,
+and DOM-XSS protection using DOMPurify.
+
+![Application UI](docs/screenshots/app-ui.png)
+
+---
+
+### GitHub Actions Pipeline
+
+The complete DevSecOps pipeline executes automatically using GitHub Actions,
+performing installation, linting, build validation, dependency scanning,
+SonarQube analysis, and artifact generation.
+
+![GitHub Actions Pipeline](docs/screenshots/github-actions.png)
+
+---
+
+### SonarQube Analysis
+
+#### Project Dashboard
+
+Shows the overall Quality Gate status and maintainability metrics after static
+analysis.
+
+![SonarQube Dashboard](docs/screenshots/sonarqube-dashboard.png)
+
+#### Issues Overview
+
+SonarQube identifies maintainability issues and highlights the affected source
+code with recommendations.
+
+![SonarQube Issues](docs/screenshots/sonarqube-issues-overview.png)
+
+#### Issue Details
+
+Example issue showing inline code analysis and suggested improvements.
+
+![SonarQube Issue Detail](docs/screenshots/sonarqube-issue-detail-1.png)
+
+![SonarQube Issue Detail](docs/screenshots/sonarqube-issue-detail-2.png)
+
+![SonarQube Issue Detail](docs/screenshots/sonarqube-issue-detail-3.png)
+
+---
+
+### Snyk Dependency Scanning
+
+Snyk performs Software Composition Analysis (SCA) by scanning project
+dependencies for known vulnerabilities.
+
+#### Vulnerability Summary
+
+![Snyk Overview](docs/screenshots/snyk-overview.png)
+
+#### Dependency Graph
+
+Shows vulnerable packages and their dependency paths.
+
+![Snyk Dependency Graph](docs/screenshots/snyk-dependency-graph.png)
+
+#### Vulnerability Details
+
+Examples of detected dependency vulnerabilities and recommended fixes.
+
+![Snyk Issues 1](docs/screenshots/snyk-issues-1.png)
+
+![Snyk Issues 2](docs/screenshots/snyk-issues-2.png)
+
+![Snyk Issues 3](docs/screenshots/snyk-issues-3.png)
+
+---
+
+### Local Pipeline Execution
+
+Execution of the complete DevSecOps workflow using GitHub Actions (`act`) in a
+local environment.
+
+![Local Pipeline](docs/screenshots/local-pipeline.png)
+
 
 ---
 

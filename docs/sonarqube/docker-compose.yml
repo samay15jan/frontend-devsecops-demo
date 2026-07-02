@@ -1,0 +1,41 @@
+# =============================================================================
+# Local SonarQube Community Edition
+# -----------------------------------------------------------------------------
+# Spins up a local SonarQube server for testing the CI pipeline offline
+# (e.g. with `act`) instead of paying for SonarCloud/SonarQube hosting.
+#
+# Usage:
+#   docker compose up -d
+#   Open http://localhost:9000  (default login: admin / admin - you'll be
+#   forced to set a new password on first login)
+#
+# Then generate a token: My Account (top right) -> Security -> Generate
+# Tokens, and put it in your local `.secrets` file as SONAR_TOKEN
+# (see .secrets.example).
+#
+# To stop:
+#   docker compose down
+# To fully reset (wipe all local SonarQube data/projects):
+#   docker compose down -v
+# =============================================================================
+
+services:
+  sonarqube:
+    image: sonarqube:community
+    container_name: sonarqube-local
+    ports:
+      - "9000:9000"
+    environment:
+      # Disables Elasticsearch bootstrap checks that otherwise require
+      # host-level kernel tuning (vm.max_map_count) - fine for a local,
+      # single-user demo instance. Do NOT do this in production.
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+
+volumes:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:

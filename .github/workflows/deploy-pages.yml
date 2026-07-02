@@ -1,0 +1,51 @@
+# =============================================================================
+# GitHub Pages Deployment
+# -----------------------------------------------------------------------------
+# Builds the React production bundle and publishes it to the `gh-pages`
+# branch on every push to `main`. This is separate from
+# security.yml (which handles linting/scanning) so a scan failure never
+# blocks a working deploy, and a deploy never runs the (slower) security
+# tooling.
+#
+# One-time repo setup after this workflow's first successful run:
+#   Repo Settings -> Pages -> Build and deployment -> Source: "Deploy from
+#   a branch" -> Branch: "gh-pages" / "(root)".
+# =============================================================================
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build React app
+        run: npm run build
+        env:
+          CI: false # treat ESLint warnings as warnings, not build-breaking errors
+
+      - name: Deploy build/ to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
